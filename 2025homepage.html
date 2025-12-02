@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 Media Year In Roundup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #000000; }
+        ::-webkit-scrollbar-thumb {
+            background: #FF0040;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #FF3366; }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .media-card {
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #111111;
+            scroll-margin-top: 80px; /* space for nav + section header */
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .media-card.active-focus {
+            box-shadow: 0 0 20px rgba(255,0,64,0.4);
+            transform: translateY(-2px);
+        }
+
+        .glass-nav {
+            background: #000000;
+            border-bottom: 2px solid #FF0040;
+        }
+
+        .text-gradient {
+            background: none;
+            color: white;
+            -webkit-text-fill-color: initial;
+        }
+        
+        .album-rank-badge {
+            color: #FF0040;
+        }
+
+        /* --- CAROUSEL STYLES --- */
+        #carousel-strip {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 90px;
+            background-color: #000000;
+            border-top: 2px solid #FF0040;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 5px 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Hide scrollbar but keep functionality */
+        #carousel-strip::-webkit-scrollbar {
+            display: none; 
+        }
+        #carousel-strip {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .carousel-item {
+            display: inline-block;
+            flex-shrink: 0;
+            width: 70px;
+            height: 70px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: #222;
+        }
+        
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .carousel-item:hover {
+            border-color: #555;
+        }
+        .carousel-item:hover img {
+            opacity: 1;
+        }
+
+        /* Active State (Syncs with scroll) */
+        .carousel-item.active {
+            border-color: #FF0040;
+            box-shadow: 0 0 15px rgba(255, 0, 64, 0.4);
+            transform: scale(1.05);
+        }
+        .carousel-item.active img {
+            opacity: 1;
+        }
+
+        .carousel-rank {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #FF0040;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 4px;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden">
+
+<nav class="glass-nav fixed top-0 w-full z-50 py-5">
+    <div class="w-[95%] max-w-[1800px] mx-auto flex justify-between items-center px-4">
+        <div class="font-black text-xl tracking-tighter text-white">
+            2025 <span class="text-[#FF0040] font-normal">ROUNDUP</span>
+        </div>
+        <div class="space-x-8 text-sm font-bold tracking-wide text-gray-400">
+            <a href="#albums-section" class="hover:text-white transition-colors">ALBUMS</a>
+            <a href="#songs-section" class="hover:text-white transition-colors">SONGS</a>
+        </div>
+    </div>
+</nav>
+
+<header class="min-h-[80vh] flex flex-col justify-center items-center text-center px-4 relative">
+    <h1 class="text-8xl md:text-[12rem] font-black mb-2 tracking-tighter text-gradient leading-none text-white">2025</h1>
+    <p class="text-2xl text-[#FF0040] tracking-[0.5em] uppercase font-light">The Collection</p>
+</header>
+
+<main class="w-[95%] max-w-[1800px] mx-auto pb-48">
+
+    <section id="albums-section" class="mb-48" data-type="albums">
+        <div class="sticky top-[64px] z-40 py-6 bg-black mb-12 border-b-2 border-white/40">
+            <h2 class="text-5xl font-black tracking-tighter text-white">
+                ALBUMS <span class="text-2xl text-[#FF0040] align-middle ml-2 font-normal">TOP 30</span>
+            </h2>
+        </div>
+        <div id="album-list" class="grid grid-cols-1 gap-6"></div> 
+    </section>
+
+    <section id="songs-section" class="mb-48" data-type="songs">
+        <div class="sticky top-[64px] z-40 py-6 bg-black mb-12 border-b-2 border-white/40">
+            <h2 class="text-5xl font-black tracking-tighter text-white">
+                SONGS <span class="text-2xl text-[#FF0040] align-middle ml-2 font-normal">TOP 50</span>
+            </h2>
+        </div>
+        <div id="song-list" class="space-y-16"></div>
+    </section>
+
+</main>
+
+<div id="carousel-strip">
+    </div>
+
+<footer class="text-center py-24 text-gray-600 text-sm border-t border-gray-900 bg-black/50">
+</footer>
+
+<script>
+    // --- DATA ---
+
+    // Songs data
+    const songs = [
+        { rank: 1,  title: "Eusexua", artist: "FKA twigs", spotifyId: "6TeKbncyK62smlAvPy1dNa" },
+        { rank: 2,  title: "Drinking Age", artist: "Cameron Winter", spotifyId: "6nUPcVDYjCrnNMaXAJ9eO3" },
+        { rank: 3,  title: "Dunning Kruger's Loser Cruiser", artist: "Tropical Fuck Storm", spotifyId: "2PGib1aUC1msDTwRBPO5Gy" },
+        { rank: 4,  title: "忘れろ女", artist: "betcover!!", spotifyId: "4JnKSfRE4sM1LVHRwkDNEM" },
+        { rank: 5,  title: "How to Pretend", artist: "Lucy Bedrosque", spotifyId: "4IKG0oDjlYYJKSGhPxaoSd" },
+        { rank: 6,  title: "Bloodsport", artist: "Maruja", spotifyId: "66wM8T14qRselu34qFBhC2" },
+        { rank: 7,  title: "Target Practice", artist: "Ho99o9", spotifyId: "1N3LYk2u9cSGnH1x5ODoqD" },
+        { rank: 8,  title: "CONTROL", artist: "Frost Children", spotifyId: "1gfgqrlGzSWP60eivYn702" },
+        { rank: 9,  title: "Cinderella", artist: "Model/Actriz", spotifyId: "37Dsnkoxh3zFRcEwZAOIBg" },
+        { rank: 10, title: "catch these fists", artist: "Wet Leg", spotifyId: "11wHmDneCglIJZRMOMUhUw" },
+        { rank: 11, title: "Taxes", artist: "Geese", spotifyId: "7r9BUOSnekEjrkMhmxD6Ae" },
+        { rank: 12, title: "Task Kitty (Save Me)", artist: "Megumi Acorda", spotifyId: "6Ta74DAkQpfjfkDUQshwL4" },
+        { rank: 13, title: "You N33d Me", artist: "Viagra Boys", spotifyId: "1xYF92gHczGqHPHaMfMnOl" },
+        { rank: 14, title: "Psychosis Is Just a Number", artist: "Guerilla Toss", spotifyId: "2wjmsPBezY7pe7Uv6bSgcG" },
+        { rank: 15, title: "RE FORRO", artist: "CA7RIEL & Paco Amoroso", spotifyId: "1qB1YwUoz2xrk18SoejACp" },
+        { rank: 16, title: "home menu", artist: "alyzeea", spotifyId: "2TAPZOc19wkcPHONTGHA7r" },
+        { rank: 17, title: "Sugar Water", artist: "McKinley Dixon (feat. Quelle Chris and Anjimile)", spotifyId: "01PqV02iL1GK8noTdDRKDX" },
+        { rank: 18, title: "Niagara Falls", artist: "The Weeknd", spotifyId: "2v0AG62ZHtD3I4YmTb3WYM" },
+        { rank: 19, title: "Star 69", artist: "Snõõper", spotifyId: "0e2aRqnNEkLc1NDgVpfSuP" },
+        { rank: 20, title: "実験中", artist: "Sheena Ringo", spotifyId: "3WBTLWS12dW2h1yEmQdu5t" },
+        { rank: 21, title: "Filthy Dog", artist: "Joost", spotifyId: "5cE41BmYbkU4fleNXJ7DNA" },
+        { rank: 22, title: "The Birds Don't Sing", artist: "Clipse, John Legend, Voices of Fire, Pusha T, Malice", spotifyId: "6L3i4jdNnk0a9kMT3qIqTG" },
+        { rank: 23, title: "PIXELATED KISSES", artist: "Joji", spotifyId: "2OZVskV28xxJjjhQqKTLSg" },
+        { rank: 24, title: "I'll Take It", artist: "Sophia Stel", spotifyId: "0FAlG6uOeaXWuRdDxaeIQY" },
+        { rank: 25, title: "CRANK", artist: "Slayyyter", spotifyId: "5lFu1VR7s2EvuKAi6qxU0G" },
+        { rank: 26, title: "WRECK MY LIFE", artist: "illuminati hotties (feat. PUP)", spotifyId: "5PLmlMi5vvoL9pvR8E8UOo" },
+        { rank: 27, title: "Back To Me", artist: "The Marias", spotifyId: "4E0P1xs3JNmsNr5c5nFTZJ" },
+        { rank: 28, title: "Deeply Still In Love", artist: "ROLE MODEL", spotifyId: "4iaZ9pLu8NumzkP9EmziE2" },
+        { rank: 29, title: "BLK ZMBY", artist: "billy woods, Steel Tipped Dove", spotifyId: "0tQP9nRJ72Lc2utb2bZmxj" },
+        { rank: 30, title: "Simple", artist: "Blu, August Fanon, Sane, Chester Watson", spotifyId: "0TESGPQgUHCKjbW210CB6k" },
+        { rank: 31, title: "NEW TRY", artist: "Dev Lemons", spotifyId: "7orAJpdzHjVxKSjM0FWVnh" },
+        { rank: 32, title: "Parachute", artist: "Hayley Williams", spotifyId: "7pasIrCqLFAOtPgXyuYHnV" },
+        { rank: 33, title: "Schäfer", artist: "Hönningbarna", spotifyId: "0zyxL3tYZxtqgqazM0UtEm" },
+        { rank: 34, title: "Don't You Worry Baby", artist: "Tyler, The Creator (feat. Madison McFerrin)", spotifyId: "45mVT3DCE7AATXgESSdfee" },
+        { rank: 35, title: "This Summer", artist: "Sleigh Bells", spotifyId: "6hBI20T111Uve3Sl3EZf4W" },
+        { rank: 36, title: "This Is Real", artist: "feeble little horse", spotifyId: "4LYXtoiuM9xEmxklVvQnLl" },
+        { rank: 37, title: "Angel", artist: "Weatherday", spotifyId: "0TXezdBZlkwhAhmrYIBvxv" },
+        { rank: 38, title: "Spike Island", artist: "Pulp", spotifyId: "1c66APUihMSvbniRdka1Er" },
+        { rank: 39, title: "Portrait of My Heart", artist: "SPELLLING", spotifyId: "7GlExXS4otYR7sntsPMcMd" },
+        { rank: 40, title: "Giving Up Air", artist: "The Temper Trap", spotifyId: "4K49GNARzyKM5WuZVLB6Jy" },
+        { rank: 41, title: "Abracadabra", artist: "Lady Gaga", spotifyId: "5ZLUm9eab8y3tqQ1OhQSHI" },
+        { rank: 42, title: "ZEET NOISE", artist: "Skrillex, Boys Noize, Dylan Brady", spotifyId: "4VEEeQbtROwKArwA0FWXUp" },
+        { rank: 43, title: "POP OUT", artist: "Playboi Carti", spotifyId: "3j3SfV4hAcR4XjCvW393Gr" },
+        { rank: 44, title: "Do It", artist: "underscores", spotifyId: "5BDo6TzD8q0oNtqhhXU3nx" },
+        { rank: 45, title: "chrysalis", artist: "L'Impératrice, Louve", spotifyId: "1CyqOIcejpX5Zqzw5BRHFb" },
+        { rank: 46, title: "Cross Your Mind", artist: "Shelly", spotifyId: "3a3zDlE4bgI6ZvU00m6o84" },
+        { rank: 47, title: "Evangelic Girl is a Gun", artist: "yeule", spotifyId: "2jjLiYXjmDzfyul2IJ6EVa" },
+        { rank: 48, title: "ghosts of your whispered words linger", artist: "miffle", spotifyId: "7q5tsBnpraFbIboFUq9fgY" },
+        { rank: 49, title: "Magnolia", artist: "Deafheaven", spotifyId: "5zITiikxJP51591PPTd0pU" },
+        { rank: 50, title: "5 Dollar Pony Rides", artist: "Mac Miller", spotifyId: "1xKGnsdKOh8jx8pzSZAgXE" }
+    ];
+
+    // Albums data
+    const albums = [
+        { rank: 1,  title: "Heavy Metal", artist: "Cameron Winter", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/d/db/Cameron_Winter_-_Heavy_Metal.webp/250px-Cameron_Winter_-_Heavy_Metal.webp.png" },
+        { rank: 2,  title: "EUSEXUA", artist: "FKA twigs", imageUrl: "https://upload.wikimedia.org/wikipedia/en/c/c4/FKA_Twigs_-_Eusexua.png" },
+        { rank: 3,  title: "yuki", artist: "betcover!!", imageUrl: "https://niewmedia.com/wp-content/uploads/2025/06/a436cdc287e5f3c3e804c08a0a740c4e.webp" },
+        { rank: 4,  title: "Fairyland Codex", artist: "Tropical Fuck Storm", imageUrl: "https://f4.bcbits.com/img/a2644629526_16.jpg" },
+        { rank: 5,  title: "Pain to Power", artist: "Maruja", imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/0/08/Maruja_-_Pain_to_Power.png/250px-Maruja_-_Pain_to_Power.png" },
+        { rank: 6,  title: "Moisturizer", artist: "Wet Leg", imageUrl: "https://external-preview.redd.it/wet-leg-moisturizer-v0-bp8Q0u3E2sTOGqDNUt-p1irVKkYazNG6E-uYR6W6sk4.jpeg?width=640&crop=smart&auto=webp&s=a1d1708d7f591ef2e2c97d87df2e8fe3a5d849a5" },
+        { rank: 7,  title: "SISTER", artist: "Frost Children", imageUrl: "https://upload.wikimedia.org/wikipedia/en/8/85/Frost_Children_%E2%80%93_Sister.jpg" },
+        { rank: 8,  title: "Tomorrow We Escape", artist: "Ho99o9", imageUrl: "https://f4.bcbits.com/img/a3640009859_16.jpg" },
+        { rank: 9,  title: "dream OS", artist: "alyzeea", imageUrl: "https://f4.bcbits.com/img/a1371959644_16.jpg" },
+        { rank: 10, title: "Hurry Up Tomorrow", artist: "The Weeknd", imageUrl: "https://upload.wikimedia.org/wikipedia/en/f/f0/The_Weeknd_-_Hurry_Up_Tomorrow.png" },
+        { rank: 11, title: "Getting Killed", artist: "Geese", imageUrl: "https://f4.bcbits.com/img/a0744100055_16.jpg" },
+        { rank: 12, title: "viagr aboys", artist: "Viagra Boys", imageUrl: "https://upload.wikimedia.org/wikipedia/en/8/84/Viagra_Boys_-_Viagr_Aboys.png" },
+        { rank: 13, title: "Magic, Alive!", artist: "McKinley Dixon", imageUrl: "https://upload.wikimedia.org/wikipedia/en/a/ab/Magic%2C_Alive%21.jpg" },
+        { rank: 14, title: "Worldwide", artist: "Snõõper", imageUrl: "https://f4.bcbits.com/img/a1902331596_16.jpg" },
+        { rank: 15, title: "Pirouette", artist: "Model/Actriz", imageUrl: "https://f4.bcbits.com/img/a2193858553_10.jpg" },
+        { rank: 16, title: "Object Permanence (Deluxe)", artist: "Sophia Stel", imageUrl: "https://f4.bcbits.com/img/a1798431268_16.jpg" },
+        { rank: 17, title: "Let God Sort Em Out", artist: "Clipse", imageUrl: "https://upload.wikimedia.org/wikipedia/en/8/8d/Let_God_Sort_Em_Out.jpg" },
+        { rank: 18, title: "You're Weird Now", artist: "Guerilla Toss", imageUrl: "https://f4.bcbits.com/img/a3944046041_10.jpg" },
+        { rank: 19, title: "Unity", artist: "Joost", imageUrl: "https://i.scdnco/image/ab67616d0000b27354596ddf118f2f0bfea5d806" },
+        { rank: 20, title: "Luminescent Creatures", artist: "Ichiko Aoba", imageUrl: "https://upload.wikimedia.org/wikipedia/en/5/5a/%22Luminescent_Creatures%22_Ichiko_Aoba.jpeg" },
+        { rank: 21, title: "Balloonerism", artist: "Mac Miller", imageUrl: "https://upload.wikimedia.org/wikipedia/en/c/cb/Mac_Miller_-_Balloonerism.png" },
+        { rank: 22, title: "Soft Spot", artist: "Hønningbarna", imageUrl: "https://i.scdn.co/image/ab67616d0000b273c869ee39447e201693129a43" },
+        { rank: 23, title: "the birth and death of the universe through mount fuji", artist: "3776", imageUrl: "https://i.ebayimg.com/images/g/MpUAAeSwHxtnq1eo/s-l1600.jpg" },
+        { rank: 24, title: "Essex Honey", artist: "Blood Orange", imageUrl: "https://upload.wikimedia.org/wikipedia/en/1/17/Blood_Orange_-_Essex_Honey.png" },
+        { rank: 25, title: "MUSIC", artist: "Playboi Carti", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Playboi_Carti_-_Music_album_cover.svg" },
+        { rank: 26, title: "Lonely People With Power", artist: "Deafheaven", imageUrl: "https://upload.wikimedia.org/wikipedia/en/3/37/Lonely_People_with_Power_Deafheaven_album_cover.jpg" },
+        { rank: 27, title: "SURFACE TENSION", artist: "Dev Lemons", imageUrl: "https://f4.bcbits.com/img/a2540748559_16.jpg" },
+        { rank: 28, title: "Stardust", artist: "Danny Brown", imageUrl: "https://upload.wikimedia.org/wikipedia/en/a/ad/Stardust_%28Danny_Brown_album%29.jpg" },
+        { rank: 29, title: "The Passionate Ones", artist: "Nourished By Time", imageUrl: "https://f4.bcbits.com/img/a3577438092_16.jpg" },
+        { rank: 30, title: "SON OF SPERGY", artist: "Daniel Caesar", imageUrl: "https://media.pitchfork.com/photos/68a7746536ef408c4fab9097/1:1/w_450%2Cc_limit/Daniel-Caesar-Son-of-Spergy.jpeg" }
+    ];
+
+    // reverse so 30→1 and 50→1 visually
+    const reversedSongs  = [...songs].reverse();
+    const reversedAlbums = [...albums].reverse();
+
+    /* RENDERING */
+
+    const renderSong = (song) => {
+        const playerHTML = song.spotifyId
+            ? `<iframe src="https://open.spotify.com/embed/track/${song.spotifyId}?utm_source=generator"
+                        width="100%" height="100%" frameborder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"></iframe>`
+            : `<div class="w-full h-64 md:h-96 bg-black flex items-center justify-center text-gray-600 text-sm">
+                        Add Spotify ID to enable player
+                </div>`;
+
+        return `
+            <div id="song-${song.rank}" class="media-card rounded-2xl overflow-hidden p-0 flex flex-col md:flex-row relative group shadow-2xl" data-rank="${song.rank}">
+                <div class="absolute top-4 left-4 z-30 bg-white text-black font-black text-xl w-12 h-12 flex items-center justify-center rounded-full shadow-lg">
+                    ${song.rank}
+                </div>
+                <div class="p-8 md:w-2/5 flex flex-col justify-center relative z-10 bg-black/50 border-r border-white/5">
+                    <h3 class="text-2xl font-bold mb-3 leading-tight text-white">${song.title}</h3>
+                    <p class="text-gray-400 text-lg font-medium">${song.artist}</p>
+                    <a href="https://open.spotify.com/track/${song.spotifyId}" target="_blank" rel="noopener"
+                       class="inline-flex items-center mt-4 px-4 py-2 rounded-full bg-white text-black text-sm font-semibold tracking-wide hover:bg-gray-200 transition-colors">
+                        Open in Spotify
+                    </a>
+                </div>
+                <div class="md:w-3/5 h-64 md:h-96 bg-black relative">
+                    ${playerHTML}
+                </div>
+            </div>
+        `;
+    };
+
+    const renderAlbum = (album) => {
+        const imageHtml = album.imageUrl
+            ? `<img src="${album.imageUrl}" alt="${album.title} album cover" class="object-cover w-full h-full" />`
+            : `<div class="w-full h-full bg-neutral-800 flex items-center justify-center text-xs text-gray-500">Image Missing</div>`;
+
+        return `
+            <div id="album-${album.rank}" class="media-card rounded-xl overflow-hidden flex relative group shadow-lg bg-[#0A0A0A] hover:bg-[#1A1A1A]" data-rank="${album.rank}">
+                <div class="w-32 h-32 flex-shrink-0 relative border-r border-[#FF0040]">
+                    ${imageHtml}
+                    <div class="absolute inset-0 bg-black/30 hover:bg-black/10 transition-colors"></div>
+                </div>
+                <div class="p-4 flex flex-col justify-center">
+                    <div class="text-xs font-bold text-[#FF0040] mb-1 tracking-widest uppercase album-rank-badge">#${album.rank}</div>
+                    <h3 class="text-xl font-bold leading-tight text-white tracking-tight">${album.title}</h3>
+                    <p class="text-gray-400 text-sm mt-1 uppercase tracking-wider">${album.artist}</p>
+                </div>
+            </div>
+        `;
+    };
+
+    document.getElementById('song-list').innerHTML  = reversedSongs.map(renderSong).join('');
+    document.getElementById('album-list').innerHTML = reversedAlbums.map(renderAlbum).join('');
+
+    /* Simple scroll highlight (optional) */
+    const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle('active-focus', entry.isIntersecting);
+        });
+    }, { threshold: 0.5, rootMargin: "-20% 0px -20% 0px" });
+
+    document.querySelectorAll('.media-card').forEach(card => cardObserver.observe(card));
+</script>
+</body>
+</html>
